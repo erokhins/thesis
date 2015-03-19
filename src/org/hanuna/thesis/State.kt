@@ -8,24 +8,24 @@ trait Graph {
     fun get(client: Int, piece: Int): Boolean
 }
 
-trait MutableGraph : Graph {
-
+trait InfoCollector {
     fun set(client: Int, piece: Int, value: Boolean)
 }
 
+trait MutableGraph : Graph, InfoCollector
 
 trait Model {
     val iteration: Long
     val time: Double
 
     val currentGraph: Graph
-    val uploadClientsCapability: List<Double>
 }
 
 trait MutableModel : Model {
     override var iteration: Long
     override var time: Double
 
+    fun createEdge(client: Int, value: Int)
 
-    override val currentGraph: MutableGraph
+    fun addInfoCollector(infoCollector: InfoCollector)
 }
