@@ -1,18 +1,23 @@
 package org.hanuna.thesis
 
+trait ModelInfo
 
-trait Graph {
+trait Graph: ModelInfo {
     val clientsCount: Int
     val piecesCount: Int
 
     fun get(client: Int, piece: Int): Boolean
 }
 
-trait InfoCollector {
+trait MutableModelInfo {
     fun set(client: Int, piece: Int, value: Boolean)
 }
 
-trait MutableGraph : Graph, InfoCollector
+trait MutableGraph : Graph, MutableModelInfo
+
+trait PiecesAmongInfo: ModelInfo {
+    val among: IntArray
+}
 
 trait Model {
     val iteration: Long
@@ -25,7 +30,9 @@ trait MutableModel : Model {
     override var iteration: Long
     override var time: Double
 
-    fun createEdge(client: Int, value: Int)
+    fun createEdge(client: Int, piece: Int)
 
-    fun addInfoCollector(infoCollector: InfoCollector)
+    fun addModelInfo(infoCollector: MutableModelInfo)
+
+    fun getModelInfo<T: ModelInfo>(klass: Class<T>): T?
 }
