@@ -5,8 +5,10 @@ import java.util.BitSet
 
 class GraphImpl(override val clientsCount: Int, override val piecesCount: Int) : MutableGraph {
     val bits = BitSet(clientsCount * piecesCount)
+    var updateFun: ((client: Int, piece: Int, value: Boolean)-> Unit)? = null
 
     override fun set(client: Int, piece: Int, value: Boolean) {
+        updateFun?.invoke(client, piece, value)
         bits[edgeIndex(client, piece)] = value
     }
 
@@ -16,29 +18,20 @@ class GraphImpl(override val clientsCount: Int, override val piecesCount: Int) :
     private fun edgeIndex(client: Int, piece: Int) = client * piecesCount + piece
 }
 
-class ModelImpl(currentGraph: MutableGraph) : MutableModel {
-    override val currentGraph: Graph = currentGraph
+class ModelImpl(currentGraph: GraphImpl) : MutableModel {
+    override val piecesAmongInfo: PiecesAmongInfoImpl = PiecesAmongInfoImpl(currentGraph.piecesCount)
+
+    override val currentGraph: MutableGraph = currentGraph
     override var iteration: Long = 0
     override var time: Double = 0.toDouble()
 
-    private val infoCollection = ArrayList<MutableModelInfo>()
-
     init {
-        infoCollection.add(currentGraph)
-    }
+        currentGraph.updateFun = { client, count, piece ->
+            piecesAmongInfo.set(client, count, piece)
 
-    override fun createEdge(client: Int, piece: Int) = infoCollection.forEach { it.set(client, piece, true) }
-
-    override fun addModelInfo(infoCollector: MutableModelInfo) {
-        infoCollection.add(infoCollector)
-    }
-
-    override fun <T : ModelInfo> getModelInfo(klass: Class<T>): T? {
-        infoCollection.forEach {
-            if (klass.isInstance(it)) return it as T
         }
-        return null
     }
+
 }
 
 class PiecesAmongInfoImpl(piecesCount: Int): PiecesAmongInfo, MutableModelInfo {
@@ -48,4 +41,9 @@ class PiecesAmongInfoImpl(piecesCount: Int): PiecesAmongInfo, MutableModelInfo {
         if (value) among[piece]++
         else among[piece]--
     }
+}
+
+fun emptyModel(clients: Int, pieces: Int) : MutableModel {
+    val model = ModelImpl(GraphImpl(clients, pieces))
+    return model
 }

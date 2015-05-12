@@ -30,9 +30,7 @@ trait MutableModel : Model {
     override var iteration: Long
     override var time: Double
 
-    fun createEdge(client: Int, piece: Int)
+    override val currentGraph: MutableGraph
 
-    fun addModelInfo(infoCollector: MutableModelInfo)
-
-    fun getModelInfo<T: ModelInfo>(klass: Class<T>): T?
+    val piecesAmongInfo: PiecesAmongInfo
 }
