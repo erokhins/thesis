@@ -17,6 +17,9 @@ trait MutableGraph : Graph, MutableModelInfo
 
 trait PiecesAmongInfo: ModelInfo {
     val among: IntArray
+    val minAmong: Int
+    val minIndexes: Set<Int>
+    val minIndex: Int
 }
 
 trait Model {

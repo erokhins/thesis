@@ -53,7 +53,7 @@ fun runForConfig(config: Config) {
     println(config)
     modelIteration(Model1, config)
     modelIteration(Model2_2, config)
-    modelIteration(Model3, config)
+    modelIteration(Model3_first, config)
     println()
 }
 
@@ -83,6 +83,9 @@ private fun getResult(modelUpdater: ModelUpdater, config: Config): Int {
     val model = emptyModel(config.clientsCount, config.piecesCount)
     modelUpdater.step(model, config.iterations)
     val amongInfo = model.piecesAmongInfo
-    return amongInfo.among.min()!!
+
+    if (amongInfo.among.min() != amongInfo.minAmong) throw AssertionError()
+
+    return amongInfo.minAmong
 }
 

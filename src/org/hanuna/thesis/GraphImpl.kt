@@ -36,10 +36,38 @@ class ModelImpl(currentGraph: GraphImpl) : MutableModel {
 
 class PiecesAmongInfoImpl(piecesCount: Int): PiecesAmongInfo, MutableModelInfo {
     override val among = IntArray(piecesCount)
+    override var minAmong: Int = 0
+
+    override var minIndexes: MutableSet<Int> = piecesCount.indices.toHashSet()
+
+    override var minIndex: Int = 0
 
     override fun set(client: Int, piece: Int, value: Boolean) {
-        if (value) among[piece]++
-        else among[piece]--
+        val prevAmong = among[piece]
+        if (value)  {
+            among[piece]++
+            if (prevAmong == minAmong) {
+                minIndexes.remove(piece)
+                if (minIndexes.isEmpty()) {
+                    update()
+                } else if (piece == minIndex) {
+                    minIndex = minIndexes.min()!!
+                }
+            }
+        }
+        else {
+            among[piece]--
+            if (prevAmong == minAmong + 1) {
+                minIndexes.add(piece)
+            }
+        }
+    }
+
+    private fun update() {
+        minAmong = among.min()!!
+        minIndexes.clear()
+        minIndexes.addAll(among.filter { it == minAmong })
+        minIndex = minIndexes.min()!!
     }
 }
 

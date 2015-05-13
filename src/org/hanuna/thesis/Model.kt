@@ -10,13 +10,25 @@ fun ModelUpdater.step(model: MutableModel, times: Int) = (0..times - 1).forEach 
     step(model)
 }
 
-object Model3 : ModelUpdater {
+fun MutableGraph.tryAdd(client: Int, piece: Int): Boolean {
+    if (!get(client, piece)) {
+        set(client, piece, true)
+        return true
+    }
+    return false
+}
+
+object Model3_first : ModelUpdater {
     override fun step(model: MutableModel) {
         val graph = model.currentGraph
         val amongInfo = model.piecesAmongInfo
         notMore100(graph.clientsCount) {
 
             val client = random(0..graph.clientsCount - 1)
+
+            // optimization
+            if (graph.tryAdd(client, amongInfo.minIndex)) return
+
             var minEdge = graph.clientsCount
             var pieceIndex = -1
             for (piece in 0..graph.piecesCount - 1) {
@@ -29,9 +41,24 @@ object Model3 : ModelUpdater {
             }
             if (pieceIndex != -1) {
                 graph[client, pieceIndex] = true
-                return@notMore100 true
+                return
             }
-            false
+        }
+    }
+}
+
+object Model3_fix : ModelUpdater {
+    override fun step(model: MutableModel) {
+        val graph = model.currentGraph
+        val amongInfo = model.piecesAmongInfo
+        notMore100(graph.clientsCount) {
+
+            val client = random(0..graph.clientsCount - 1)
+            val minIndexes = amongInfo.minIndexes
+            notMore100(minIndexes.size()) {
+                val someIndex = minIndexes.getRandom()!!
+                if (graph.tryAdd(client, someIndex)) return
+            }
         }
     }
 }
@@ -44,17 +71,16 @@ object Model1 : ModelUpdater {
             val piece = random(0..graph.piecesCount - 1)
             if (!graph[client, piece]) {
                 graph[client, piece] = true
-                return@notMore100 true
+                return
             }
-            false
         }
     }
 
 }
 
-fun notMore100(counts: Int = 100, run: () -> Boolean) {
+inline fun notMore100(counts: Int = 100, run: () -> Unit) {
     for (i in 0..counts * 10) {
-        if (run()) return
+        run()
     }
     throw IllegalStateException()
 }
@@ -70,12 +96,11 @@ object Model2 : ModelUpdater {
                 if (!graph[client, piece]) {
                     if (edgeIndex == 0) {
                         graph[client, piece] = true
-                        return@notMore100 true
+                        return
                     }
                     edgeIndex--
                 }
             }
-            return@notMore100 false
         }
     }
 }
@@ -89,10 +114,9 @@ object Model2_2 : ModelUpdater {
                 val piece = random(graph.piecesCount.indices)
                 if (!graph[client, piece]) {
                     graph[client, piece] = true
-                    return@notMore100 true
+                    return
                 }
             }
-            return@notMore100 false
         }
     }
 }

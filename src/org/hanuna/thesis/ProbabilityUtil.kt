@@ -16,3 +16,8 @@ fun expectationAndVariety(list: List<Double>): Pair<Double, Double> {
     val variety = list.sumByDouble { (it - expectation).sq() } / list.size()
     return Pair(expectation, variety)
 }
+
+fun <T> Set<T>.getRandom(): T? {
+    val r = random(size().indices)
+    return this.sequence().drop(r).firstOrNull()
+}
