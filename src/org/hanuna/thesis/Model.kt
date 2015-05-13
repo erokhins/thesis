@@ -12,9 +12,9 @@ fun ModelUpdater.step(model: MutableModel, times: Int) = (0..times - 1).forEach 
 
 object Model3 : ModelUpdater {
     override fun step(model: MutableModel) {
-        notMore100 {
-            val graph = model.currentGraph
-            val amongInfo = model.piecesAmongInfo
+        val graph = model.currentGraph
+        val amongInfo = model.piecesAmongInfo
+        notMore100(graph.clientsCount) {
 
             val client = random(0..graph.clientsCount - 1)
             var minEdge = graph.clientsCount
@@ -39,21 +39,21 @@ object Model3 : ModelUpdater {
 object Model1 : ModelUpdater {
     override fun step(model: MutableModel) {
         val graph = model.currentGraph
-        for (i in 0..10000000) {
+        notMore100(graph.clientsCount * graph.piecesCount) {
             val client = random(0..graph.clientsCount - 1)
             val piece = random(0..graph.piecesCount - 1)
             if (!graph[client, piece]) {
                 graph[client, piece] = true
-                return
+                return@notMore100 true
             }
+            false
         }
-        throw IllegalStateException()
     }
 
 }
 
-fun notMore100(run: () -> Boolean) {
-    for (i in 0..100) {
+fun notMore100(counts: Int = 100, run: () -> Boolean) {
+    for (i in 0..counts * 10) {
         if (run()) return
     }
     throw IllegalStateException()
@@ -61,8 +61,8 @@ fun notMore100(run: () -> Boolean) {
 
 object Model2 : ModelUpdater {
     override fun step(model: MutableModel) {
-        notMore100 {
-            val graph = model.currentGraph
+        val graph = model.currentGraph
+        notMore100(graph.clientsCount) {
             val client = random(graph.clientsCount.indices)
             val countEdges = graph.piecesCount.indices.sumBy { if (graph[client, it]) 0 else 1 }
             var edgeIndex = random(countEdges.indices)
@@ -73,6 +73,23 @@ object Model2 : ModelUpdater {
                         return@notMore100 true
                     }
                     edgeIndex--
+                }
+            }
+            return@notMore100 false
+        }
+    }
+}
+
+object Model2_2 : ModelUpdater {
+    override fun step(model: MutableModel) {
+        val graph = model.currentGraph
+        notMore100(graph.clientsCount) {
+            val client = random(graph.clientsCount.indices)
+            for (i in 0..graph.piecesCount * 10) {
+                val piece = random(graph.piecesCount.indices)
+                if (!graph[client, piece]) {
+                    graph[client, piece] = true
+                    return@notMore100 true
                 }
             }
             return@notMore100 false

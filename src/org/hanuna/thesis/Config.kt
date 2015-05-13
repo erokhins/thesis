@@ -52,7 +52,7 @@ fun modelIteration(model: ModelUpdater, config: Config) {
 fun runForConfig(config: Config) {
     println(config)
     modelIteration(Model1, config)
-    modelIteration(Model2, config)
+    modelIteration(Model2_2, config)
     modelIteration(Model3, config)
     println()
 }
