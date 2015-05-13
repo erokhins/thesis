@@ -12,7 +12,7 @@ fun ModelUpdater.step(model: MutableModel, times: Int) = (0..times - 1).forEach 
 
 object Model3 : ModelUpdater {
     override fun step(model: MutableModel) {
-        while (true) {
+        notMore100 {
             val graph = model.currentGraph
             val amongInfo = model.piecesAmongInfo
 
@@ -29,8 +29,53 @@ object Model3 : ModelUpdater {
             }
             if (pieceIndex != -1) {
                 graph[client, pieceIndex] = true
+                return@notMore100 true
+            }
+            false
+        }
+    }
+}
+
+object Model1 : ModelUpdater {
+    override fun step(model: MutableModel) {
+        val graph = model.currentGraph
+        for (i in 0..1000) {
+            val client = random(0..graph.clientsCount - 1)
+            val piece = random(0..graph.piecesCount - 1)
+            if (!graph[client, piece]) {
+                graph[client, piece] = true
                 return
             }
+        }
+        throw IllegalStateException()
+    }
+
+}
+
+fun notMore100(run: () -> Boolean) {
+    for (i in 0..100) {
+        if (run()) return
+    }
+    throw IllegalStateException()
+}
+
+object Model2 : ModelUpdater {
+    override fun step(model: MutableModel) {
+        notMore100 {
+            val graph = model.currentGraph
+            val client = random(graph.clientsCount.indices)
+            val countEdges = graph.piecesCount.indices.sumBy { if (graph[client, it]) 0 else 1 }
+            var edgeIndex = random(countEdges.indices)
+            for (piece in graph.piecesCount.indices) {
+                if (!graph[client, piece]) {
+                    if (edgeIndex == 0) {
+                        graph[client, piece] = true
+                        return@notMore100 true
+                    }
+                    edgeIndex--
+                }
+            }
+            return@notMore100 false
         }
     }
 }
