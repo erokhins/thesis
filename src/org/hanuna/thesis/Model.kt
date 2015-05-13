@@ -39,7 +39,7 @@ object Model3 : ModelUpdater {
 object Model1 : ModelUpdater {
     override fun step(model: MutableModel) {
         val graph = model.currentGraph
-        for (i in 0..1000) {
+        for (i in 0..10000000) {
             val client = random(0..graph.clientsCount - 1)
             val piece = random(0..graph.piecesCount - 1)
             if (!graph[client, piece]) {

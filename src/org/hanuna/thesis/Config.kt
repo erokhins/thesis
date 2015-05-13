@@ -1,36 +1,88 @@
 package org.hanuna.thesis
 
-public val CLIENTS_COUNT: Int = 100
-public val PIECES_COUNT: Int = 1000
+import java.util.*
 
-public val P: Double = 0.4
+data class Config(
+        val clientsCount: Int,
+        val piecesCount: Int,
+        val p: Double,
+        val triesForModel: Int
+) {
+    val iterations = Math.round(clientsCount * piecesCount * p).toInt()
+}
 
-public val ITERATIONS: Int = Math.round(CLIENTS_COUNT*PIECES_COUNT* P).toInt()
+val TASKS = listOf(
+        configs(10, 100, 0.1),
+        configs(100, 100, 0.05), configs(100, 1000, 0.05),
+        configs(500, 500, 0.05), configs(500, 5000, 0.05), configs(500, 10000, 0.05)
+)
 
-public object ClientCapabilitiesFactory {
+fun configs(clientsCount: Int,
+            piecesCount: Int,
+            deltaP: Double,
+            triesForModel: Int = 50
+): List<Config> {
+    var p = deltaP
+    val result = ArrayList<Config>()
+    while (p < 1) {
+        result.add(Config(clientsCount, piecesCount, p, triesForModel))
+        p += deltaP
+    }
+    return result
+}
 
-    fun bar(a: List<Int>) {
-        a.joinToString()
+
+
+
+val tab = "   "
+
+fun modelIteration(model: ModelUpdater, config: Config) {
+    try {
+        val results = config.triesForModel.indices.map { getResult(model, config).toDouble() / config.clientsCount }
+        val expectationAndVariety = expectationAndVariety(results)
+
+        println("$tab ${model.javaClass.getSimpleName()} : ${expectationAndVariety.first} ± ${Math.sqrt(expectationAndVariety.second)}")
+    } catch (e: Throwable) {
+        println("$tab Exception due calculation ${model.javaClass.getSimpleName()}")
+        e.printStackTrace()
+    }
+
+}
+
+fun runForConfig(config: Config) {
+    println(config)
+    modelIteration(Model1, config)
+    modelIteration(Model2, config)
+    modelIteration(Model3, config)
+    println()
+}
+
+fun printTasks() {
+    TASKS.forEachIndexed { i, list ->
+        println("TASK $i:")
+        list.forEach { println("$tab $it") }
+        println()
+        println()
     }
 }
 
-fun modelIteration(model: ModelUpdater, counts: Int = 50) {
-    val results = (0..counts).map { getResult(model).toDouble() / CLIENTS_COUNT }
-    val expectationAndVariety = expectationAndVariety(results)
-
-    println("${model.javaClass.getSimpleName()} : ${expectationAndVariety.first} ± ${Math.sqrt(expectationAndVariety.second)}")
-
-}
-
 fun main(args: Array<String>) {
-    modelIteration(Model1)
-    modelIteration(Model2)
-    modelIteration(Model3)
+    printTasks()
+    TASKS.forEachIndexed { i, configs ->
+        println("Start task $i")
+
+        configs.forEach {  runForConfig(it) }
+
+        println("Done task $i")
+        println()
+        println()
+    }
 }
 
-private fun getResult(modelUpdater: ModelUpdater): Int {
-    val model = emptyModel(CLIENTS_COUNT, PIECES_COUNT)
-    modelUpdater.step(model, ITERATIONS)
+private fun getResult(modelUpdater: ModelUpdater, config: Config): Int {
+    val model = emptyModel(config.clientsCount, config.piecesCount)
+    modelUpdater.step(model, config.iterations)
     val amongInfo = model.piecesAmongInfo
     return amongInfo.among.min()!!
 }
+
