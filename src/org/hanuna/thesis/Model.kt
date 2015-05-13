@@ -55,7 +55,7 @@ object Model3_fix : ModelUpdater {
 
             val client = random(0..graph.clientsCount - 1)
             val minIndexes = amongInfo.minIndexes
-            notMore100(minIndexes.size()) {
+            notMore100(minIndexes.size(), false) {
                 val someIndex = minIndexes.getRandom()!!
                 if (graph.tryAdd(client, someIndex)) return
             }
@@ -78,11 +78,12 @@ object Model1 : ModelUpdater {
 
 }
 
-inline fun notMore100(counts: Int = 100, run: () -> Unit) {
+inline fun notMore100(counts: Int = 100, throwE: Boolean = true, run: () -> Unit) {
     for (i in 0..counts * 10) {
         run()
     }
-    throw IllegalStateException()
+    if (throwE)
+        throw IllegalStateException()
 }
 
 object Model2 : ModelUpdater {

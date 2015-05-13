@@ -24,7 +24,7 @@ fun configs(clientsCount: Int,
 ): List<Config> {
     var p = deltaP
     val result = ArrayList<Config>()
-    while (p < 1) {
+    while (p < 0.99) {
         result.add(Config(clientsCount, piecesCount, p, triesForModel))
         p += deltaP
     }
@@ -54,6 +54,7 @@ fun runForConfig(config: Config) {
     modelIteration(Model1, config)
     modelIteration(Model2_2, config)
     modelIteration(Model3_first, config)
+    modelIteration(Model3_fix, config)
     println()
 }
 
@@ -84,7 +85,8 @@ private fun getResult(modelUpdater: ModelUpdater, config: Config): Int {
     modelUpdater.step(model, config.iterations)
     val amongInfo = model.piecesAmongInfo
 
-    if (amongInfo.among.min() != amongInfo.minAmong) throw AssertionError()
+    if (amongInfo.among.min() != amongInfo.minAmong)
+        throw AssertionError()
 
     return amongInfo.minAmong
 }

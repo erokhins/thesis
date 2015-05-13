@@ -57,7 +57,7 @@ class PiecesAmongInfoImpl(piecesCount: Int): PiecesAmongInfo, MutableModelInfo {
         }
         else {
             among[piece]--
-            if (prevAmong == minAmong + 1) {
+            if (prevAmong == minAmong + 1) { // todo min index
                 minIndexes.add(piece)
             }
         }
@@ -66,7 +66,10 @@ class PiecesAmongInfoImpl(piecesCount: Int): PiecesAmongInfo, MutableModelInfo {
     private fun update() {
         minAmong = among.min()!!
         minIndexes.clear()
-        minIndexes.addAll(among.filter { it == minAmong })
+
+        among.forEachIndexed { index, among ->
+            if (among == minAmong) minIndexes.add(index)
+        }
         minIndex = minIndexes.min()!!
     }
 }
